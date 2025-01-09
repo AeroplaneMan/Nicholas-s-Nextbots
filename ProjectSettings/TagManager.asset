@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Bot
+  - Plane
   layers:
   - Default
   - TransparentFX
@@ -16,8 +17,8 @@ TagManager:
   - WhatIsPlayer
   - WhatIsEnemy
   - Post Processing
-  - 
-  - 
+  - Checkpoint
+  - Building
   - 
   - 
   - 

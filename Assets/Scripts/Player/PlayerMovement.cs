@@ -38,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Ground Check")]
     public float playerHeight;
     public LayerMask whatIsGround;
+    public LayerMask buildingLayer;
     public bool grounded;
     public Transform groundCheck;
     public float groundDistance = 0.4f;
@@ -82,7 +83,7 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        grounded = Physics.CheckSphere(groundCheck.position, groundDistance, whatIsGround);
+        grounded = Physics.CheckSphere(groundCheck.position, groundDistance, whatIsGround) || Physics.CheckSphere(groundCheck.position, groundDistance, buildingLayer);
 
        // Debug.DrawRay(transform.position, Vector3.down * (playerHeight * 0.5f + groundDistance), Color.green);
        Debug.Log("Grounded: " + grounded + " | On Slope: " + OnSlope());
