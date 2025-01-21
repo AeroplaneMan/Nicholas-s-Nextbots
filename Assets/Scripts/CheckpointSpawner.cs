@@ -4,72 +4,66 @@ using UnityEngine;
 
 public class CheckpointSpawner : MonoBehaviour
 {
-    [SerializeField] private bool levelCompleted = false;
-    [SerializeField] private GameObject checkpoint; // The checkpoint prefab
+    private GameObject oldCheckpoint;
+    public GameObject checkpoint; // The checkpoint prefab
     [SerializeField] private float minXPos; // Minimum X position for spawn
     [SerializeField] private float maxXPos; // Maximum X position for spawn
     [SerializeField] private float minZPos; // Minimum Z position for spawn
     [SerializeField] private float maxZPos; // Maximum Z position for spawn
     [SerializeField] private LayerMask buildingLayer; // LayerMask for buildings or obstacles
     [SerializeField] private float raycastDistance = 5f; // Distance of the raycast
-    [SerializeField] private int checkpointsToComplete;
-    [SerializeField] private Animator doorAnimation;
-    private int numCheckpoints;
+    [SerializeField] private LevelCompleteCheck levelComplete;
 
-    private void Start()
-    {
-        doorAnimation.enabled = false;
-    }
+
     private void OnTriggerEnter(Collider other)
     {
-        Vector3 randomPosition;
-        int maxAttempts = 10; // Maximum attempts to find a valid position
-        bool validPositionFound = false;
-
-        for (int i = 0; i < maxAttempts; i++)
+        if (other.gameObject.name == "Trigger")
         {
-            // Generate a random position
-            randomPosition = new Vector3(Random.Range(minXPos, maxXPos), 0.58f, Random.Range(minZPos, maxZPos));
+            Vector3 randomPosition;
+            int maxAttempts = 10; // Maximum attempts to find a valid position
+            bool validPositionFound = false;
 
-            // Cast a ray forward to check for obstacles
-            if (!Physics.Raycast(randomPosition, Vector3.forward, raycastDistance, buildingLayer))
+            for (int i = 0; i < maxAttempts; i++)
             {
-                // Debug line for raycast
-                Debug.DrawLine(randomPosition, randomPosition + Vector3.forward * raycastDistance, Color.green, 2f);
+                // Generate a random position
+                randomPosition = new Vector3(
+                    Random.Range(minXPos, maxXPos),
+                    0.58f, // Ground height
+                    Random.Range(minZPos, maxZPos)
+                );
 
-                // No obstacle detected, spawn checkpoint
-                Instantiate(checkpoint, randomPosition, Quaternion.identity);
+                // Check if the area is clear using Physics.OverlapSphere
+                Collider[] colliders = Physics.OverlapSphere(randomPosition, 0.5f, buildingLayer);
 
-                numCheckpoints++;
-                // Debug line for new checkpoint position
-                Debug.DrawLine(Vector3.zero, randomPosition, Color.cyan, 60f); // Line from origin to checkpoint for visibility
+                if (colliders.Length == 0)
+                {
+                    // No obstacles detected, spawn checkpoint
+                    validPositionFound = true;
 
-                validPositionFound = true;
-                break;
+                    oldCheckpoint = checkpoint;
+
+                    // Instantiate the checkpoint
+                    checkpoint = Instantiate(checkpoint, randomPosition, Quaternion.identity);
+
+                    levelComplete.numCheckpoints++;
+                    // Debug visualizations
+                    Debug.DrawLine(Vector3.zero, randomPosition, Color.cyan, 60f); // Line from origin to checkpoint for visibility
+
+                    break;
+                }
+                else
+                {
+                    // Debug sphere if the position is invalid
+                    Debug.DrawRay(randomPosition, Vector3.up * 5f, Color.red, 2f);
+                }
             }
-            else
+
+            if (!validPositionFound)
             {
-                // Debug line if raycast hit an obstacle
-                Debug.DrawLine(randomPosition, randomPosition + Vector3.forward * raycastDistance, Color.red, 2f);
+                Debug.LogWarning("Could not find a valid position for the checkpoint.");
             }
+
+            Destroy(oldCheckpoint); // Destroy the old checkpoint
         }
-
-        if (!validPositionFound)
-        {
-            Debug.LogWarning("Could not find a valid position for the checkpoint.");
-        }
-
-        Destroy(checkpoint); // Destroy the spawner object after spawning
-        if (numCheckpoints == checkpointsToComplete)
-        {
-            levelCompleted = true;
-            doorAnimation.enabled = true;
-            doorAnimation.Play("Scene");
-        }
-    }
-
-    private void LevelComplete(int checkpoints)
-    {
-
     }
 }
