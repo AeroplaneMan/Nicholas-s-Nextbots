@@ -11,7 +11,7 @@ public class CheckpointSpawner : MonoBehaviour
     [SerializeField] private float minZPos; // Minimum Z position for spawn
     [SerializeField] private float maxZPos; // Maximum Z position for spawn
     [SerializeField] private LayerMask buildingLayer; // LayerMask for buildings or obstacles
-    [SerializeField] private float raycastDistance = 5f; // Distance of the raycast
+    [SerializeField] private float raycastDistance; // Distance of the raycast
     [SerializeField] private LevelCompleteCheck levelComplete;
 
 
